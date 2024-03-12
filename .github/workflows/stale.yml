@@ -17,15 +17,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       
-      - name: Get open PRs
+      - name: Get open PRs using GitHub Script
         id: get_prs
-        run: |
-          PRS=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/sowmyav27/github-actions/pulls?state=open" | \
-              jq -r '.[] | select(.created_at < "'$(date -d '-1 day' +%Y-%m-%dT%H:%M:%SZ)'") | "- \(.title) (#\(.number)): \(.html_url)"')
-          echo "::set-output name=prs::${PRS}"
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const moment = require('moment');
+            const prs = await github.rest.pulls.list({
+              owner: 'sowmyav27',
+              repo: 'github-actions',
+              state: 'open'
+            });
+            const stalePRs = prs.data.filter(pr => moment(pr.created_at).isBefore(moment().subtract(1, 'days'))).map(pr => `- ${pr.title} (#${pr.number}): ${pr.html_url}`).join('\n');
+            return stalePRs;
+          result-encoding: string
 
       - name: Notify on Slack if stale PRs exist
-        if: steps.get_prs.outputs.prs != ''
+        if: steps.get_prs.outputs.result
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"Open PRs for more than 1 day:\n${{ steps.get_prs.outputs.prs }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Open PRs for more than 1 day:\n${{ steps.get_prs.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
