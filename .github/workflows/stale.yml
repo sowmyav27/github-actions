@@ -22,7 +22,7 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const oneDayAgo = new Date(new Date().setDate(new Date().getDate() - 1));
+            const oneDayAgo = new Date().getDate();
             const prs = await github.rest.pulls.list({
               owner: 'sowmyav27',
               repo: 'github-actions',
