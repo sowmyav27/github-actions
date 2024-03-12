@@ -1,0 +1,32 @@
+name: Notify about all open pull requests
+
+on:
+  schedule:
+  - cron: '*/1 * * * *'
+
+jobs:
+  stale:
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Get open PRs using GitHub Script
+        id: get_prs
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const prs = await github.rest.pulls.list({
+              owner: 'sowmyav27',
+              repo: 'github-actions',
+              state: 'open'
+            });
+            const openPRs = prs.data.map(pr => `- ${pr.title} (#${pr.number}): ${pr.html_url}`).join('\n');
+            return openPRs;
+          result-encoding: string
+
+      - name: Notify on Slack if stale PRs exist
+        if: steps.get_prs.outputs.result
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Open PRs:\n${{ steps.get_prs.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
