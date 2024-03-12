@@ -57,12 +57,12 @@ jobs:
               let changesRequested = ""
               
               // No reviews on the PR for > 5 days
-              if (reviews.length == 0 && createdDate < fiveDaysAgo) {
+              if (reviews.data.length == 0 && createdDate < fiveDaysAgo) {
                 report += `Stale PR (more than 5 days): #${pr.number} ${pr.html_url}\n`;
               } 
               else {
                   for (const review of reviews.data) {
-                    const reviewDate = newDate(review.submitted_at);
+                    const reviewDate = new Date(review.submitted_at);
                     if(!lastReviewDate || reviewDate > lastReviewDate) {
                       lastReviewDate = reviewDate
                       changesRequested = review.state
