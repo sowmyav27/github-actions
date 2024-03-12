@@ -22,14 +22,27 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const fiveDaysAgo = new Date(new Date().setDate(new Date().getDate() - 5));
-            const prs = await github.rest.pulls.list({
-              owner: 'rancher',
-              repo: 'rancher',
-              state: 'open'
-            });
-            const stalePRs = prs.data.filter(pr => new Date(pr.created_at) < fiveDaysAgo).map(pr => `- ${pr.title} (#${pr.number}): ${pr.html_url}`).join('\n');
-            return stalePRs;
+           const fetchPRs = async () => {
+             let allPRs = [];
+             let page = 0;
+             const perPage = 100; // Max value allowed by GitHub API
+             let hasMorePages = true;
+             while (hasMorePages) {
+               page++;
+               const fiveDaysAgo = new Date(new Date().setDate(new Date().getDate() - 5));
+               const prs = await github.rest.pulls.list({
+                owner: 'rancher',
+                repo: 'rancher',
+                state: 'open'
+              });
+              allPRs = allPRs.concat(response.data);
+              hasMorePages = response.data.length === perPage;
+            }
+            return allPRs;
+           };
+           const prs = await fetchPRs();
+           const stalePRs = prs.data.filter(pr => new Date(pr.created_at) < fiveDaysAgo).map(pr => `- ${pr.title} (#${pr.number}): ${pr.html_url}`).join('\n');
+           return stalePRs;
           result-encoding: string
 
       - name: Notify on Slack if stale PRs exist
