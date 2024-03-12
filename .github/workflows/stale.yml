@@ -1,0 +1,31 @@
+# This workflow warns and then closes issues and PRs that have had no activity for a specified amount of time.
+#
+# You can adjust the behavior by modifying this file.
+# For more information, see:
+# https://github.com/actions/stale
+name: Mark stale pull requests
+
+on:
+  schedule:
+  - cron: '*/1 * * * *'
+
+jobs:
+  stale:
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Get open PRs
+        id: get_prs
+        run: |
+          PRS=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/sowmyav27/github-actions/pulls?state=open" | \
+              jq -r '.[] | select(.created_at < "'$(date -d '-1 day' +%Y-%m-%dT%H:%M:%SZ)'") | "- \(.title) (#\(.number)): \(.html_url)"')
+          echo "::set-output name=prs::${PRS}"
+
+      - name: Notify on Slack if stale PRs exist
+        if: steps.get_prs.outputs.prs != ''
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Open PRs for more than 1 day:\n${{ steps.get_prs.outputs.prs }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
