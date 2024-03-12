@@ -7,7 +7,7 @@ name: Mark stale pull requests - One
 
 on:
   schedule:
-  - cron: '*/1 * * * *'
+  - cron: '* * * * *'
 
 jobs:
   stale:
