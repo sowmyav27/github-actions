@@ -88,4 +88,4 @@ jobs:
       - name: Notify on Slack 
         if: steps.compile_report.outputs.result
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Report:\n${{ steps.compile_report.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Report:\n${{ steps.compile_report.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
