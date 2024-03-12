@@ -22,13 +22,13 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const moment = require('moment');
+            const oneDayAgo = new Date(new Date().setDate(new Date().getDate() - 1));
             const prs = await github.rest.pulls.list({
               owner: 'sowmyav27',
               repo: 'github-actions',
               state: 'open'
             });
-            const stalePRs = prs.data.filter(pr => moment(pr.created_at).isBefore(moment().subtract(1, 'days'))).map(pr => `- ${pr.title} (#${pr.number}): ${pr.html_url}`).join('\n');
+            const stalePRs = prs.data.filter(pr => new Date(pr.created_at) < oneDayAgo).map(pr => `- ${pr.title} (#${pr.number}): ${pr.html_url}`).join('\n');
             return stalePRs;
           result-encoding: string
 
