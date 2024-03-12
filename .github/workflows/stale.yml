@@ -13,10 +13,7 @@ jobs:
   stale:
 
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      
+    steps:      
       - name: Check PRs and compile report
         id: compile_report
         uses: actions/github-script@v5
@@ -70,7 +67,7 @@ jobs:
                 }
               }
 
-              if (lastReviewDate && changesRequested === "CHANGES_REQUESTED" && (lastReviewDate < threeDaysAgo && updatedDate > lastReviewDate))) {
+              if (lastReviewDate && changesRequested === "CHANGES_REQUESTED" && (lastReviewDate < threeDaysAgo && updatedDate > lastReviewDate)) {
                 report += `Changes made but awaiting review (more than 3 days since last update): #${pr.number} ${pr.html_url}\n`;
               }
 
