@@ -22,17 +22,17 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const oneDayAgo = new Date(new Date().setDate(new Date().getDate() - 1));
+            const fiveDaysAgo = new Date(new Date().setDate(new Date().getDate() - 5));
             const prs = await github.rest.pulls.list({
-              owner: 'sowmyav27',
-              repo: 'github-actions',
+              owner: 'rancher',
+              repo: 'rancher',
               state: 'open'
             });
-            const stalePRs = prs.data.filter(pr => new Date(pr.created_at) < oneDayAgo).map(pr => `- ${pr.title} (#${pr.number}): ${pr.html_url}`).join('\n');
+            const stalePRs = prs.data.filter(pr => new Date(pr.created_at) < fiveDaysAgo).map(pr => `- ${pr.title} (#${pr.number}): ${pr.html_url}`).join('\n');
             return stalePRs;
           result-encoding: string
 
       - name: Notify on Slack if stale PRs exist
         if: steps.get_prs.outputs.result
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"Open PRs for more than 1 day:\n${{ steps.get_prs.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Open PRs for more than 5 days:\n${{ steps.get_prs.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
