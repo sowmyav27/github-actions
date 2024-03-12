@@ -45,7 +45,6 @@ jobs:
               const hasAutomationLabel = labels.some(label => automationLabels.includes(label));
               console.log(hasAutomationLabel)
               if (!hasAutomationLabel) continue;
-              console.log(pr)
               // Fetch PR reviews
               const reviews = await github.rest.pulls.listReviews({
                 owner: 'rancher',
@@ -58,7 +57,7 @@ jobs:
               
               // No reviews on the PR for > 5 days
               if (reviews.data.length == 0 && createdDate < fiveDaysAgo) {
-                report += `Stale PR (more than 5 days): #${pr.number} ${pr.html_url}\n`;
+                report += `Stale PR with no reviews (more than 5 days): #${pr.number} ${pr.html_url}\n`;
               } 
               else {
                   for (const review of reviews.data) {
@@ -69,11 +68,16 @@ jobs:
                   }
                 }
               }
-              console.log(pr.title)
+
               if (lastReviewDate && changesRequested === "CHANGES_REQUESTED" && (lastReviewDate < threeDaysAgo && updatedDate > lastReviewDate)) {
                 report += `Changes made but awaiting review (more than 3 days since last update): #${pr.title} (#${pr.number}) ${pr.html_url}\n`;
               }
-
+              if (lastReviewDate && changesRequested === "CHANGES_REQUESTED" && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate)) {
+                report += `PR with requested changes and no updates (more than 3 days): #${pr.title} (#${pr.number}) ${pr.html_url}\n`;
+              }
+              if (lastReviewDate && changesRequested === "APPROVED" && (lastReviewDate < threeDaysAgo)) {
+                report += `Reviewed but not merged (more than 3 days since review): #${pr.title} (#${pr.number}) ${pr.html_url}\n`;
+              }
             }
             return report;
            
