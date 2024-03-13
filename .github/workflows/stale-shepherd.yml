@@ -81,6 +81,7 @@ jobs:
             report += `Stale PR with no review (more than 5 days): \n`
             report +=noReviewsReport
             report+=`No changes in this PR for over 5 days: \n`
+            report+=noChangesReport
             
             return report;
            
