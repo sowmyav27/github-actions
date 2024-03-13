@@ -2,7 +2,7 @@ name: Shepherd Mark stale pull requests
 
 on:
   schedule:
-  - cron: '0 0 * * *'
+  - cron: '* * * * *'
 
 jobs:
   stale:
@@ -22,6 +22,9 @@ jobs:
             let report = '';
             let noReviewsReport = '';
             let noChangesReport = '';
+            let awaitingReview = '';
+            let needsChanges = '';
+            let needsMerge = '';
 
             // Fetch open PRs
             const prs = await github.paginate(github.rest.pulls.list, {
@@ -45,6 +48,7 @@ jobs:
               });
               let lastReviewDate = null
               let changesRequested = ""
+              let numberOfApprovedState = 0
               
               // No reviews on the PR for > 5 days
               if (reviews.data.length == 0 && createdDate < fiveDaysAgo) {
@@ -56,26 +60,30 @@ jobs:
                     if(!lastReviewDate || reviewDate > lastReviewDate) {
                       lastReviewDate = reviewDate
                       changesRequested = review.state
+                      if ( review.state === "APPROVED"){
+                        numberOfApprovedState+=1
+                      }
                   }
                 }
               }
-              if ( updatedDate < fiveDaysAgo && changesRequested === "OPEN" ){
+              if ( updatedDate < fiveDaysAgo && (changesRequested === "OPEN" || numberOfApprovedState === 1) ){
                 noChangesReport += `#${pr.title} (#${pr.number}) ${pr.html_url}\n`;
               }
-              if (lastReviewDate && changesRequested === "CHANGES_REQUESTED" && (lastReviewDate < threeDaysAgo && updatedDate > lastReviewDate)) {
-                report += `Changes made but awaiting review (more than 3 days since last update): #${pr.title} (#${pr.number}) ${pr.html_url}\n`;
+              if (lastReviewDate && (changesRequested === "CHANGES_REQUESTED" || numberOfApprovedState === 1) && (lastReviewDate < threeDaysAgo && updatedDate > lastReviewDate)) {
+                awaitingReview += `#${pr.title} (#${pr.number}) ${pr.html_url}\n`;
               }
-              if (lastReviewDate && changesRequested === "CHANGES_REQUESTED" && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate)) {
-                report += `PR with requested changes and no updates (more than 3 days): #${pr.title} (#${pr.number}) ${pr.html_url}\n`;
+              if (lastReviewDate && (changesRequested === "CHANGES_REQUESTED" || numberOfApprovedState === 1) && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate)) {
+                needsChanges += `#${pr.title} (#${pr.number}) ${pr.html_url}\n`;
               }
-              if (lastReviewDate && changesRequested === "APPROVED" && (lastReviewDate < threeDaysAgo)) {
-                report += `Reviewed but not merged (more than 3 days since review): #${pr.title} (#${pr.number}) ${pr.html_url}\n`;
+              if (lastReviewDate && numberOfApprovedState >=2 && (lastReviewDate < threeDaysAgo)) {
+                needsMerge += `#${pr.title} (#${pr.number}) ${pr.html_url}\n`;
               }
             }
-            report += `Stale PR with no review (more than 5 days): \n`
-            report +=noReviewsReport
-            report+=`No changes in this PR for over 5 days: \n`
-            report+=noChangesReport
+            report += `Stale PR with no review (more than 5 days): \n` + noReviewsReport +`\n`
+              + `No changes in this PR for over 5 days: \n`+ noChangesReport +`\n` 
+              + `Changes made but awaiting review (more than 3 days since last update): \n`+ awaitingReview +`\n` 
+              + `PR with requested changes and no updates (more than 3 days): \n`+ needsChanges +`\n`
+              + `Reviewed but not merged (more than 3 days since review): \n` + needsMerge
             
             return report;
            
