@@ -68,7 +68,9 @@ jobs:
                   }
                 }
               }
-
+              if ( updatedDate < fiveDaysAgo && changesRequested === "OPEN" ){
+                report += `No changes in this PR for over 5 days: #${pr.title} (#${pr.number}) ${pr.html_url}\n`;
+              }
               if (lastReviewDate && changesRequested === "CHANGES_REQUESTED" && (lastReviewDate < threeDaysAgo && updatedDate > lastReviewDate)) {
                 report += `Changes made but awaiting review (more than 3 days since last update): #${pr.title} (#${pr.number}) ${pr.html_url}\n`;
               }
