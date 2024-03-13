@@ -1,4 +1,4 @@
-name: Mark stale pull requests - One
+name: Shepherd Mark stale pull requests
 
 on:
   schedule:
@@ -27,7 +27,7 @@ jobs:
             // Fetch open PRs
             const prs = await github.paginate(github.rest.pulls.list, {
               owner: 'rancher',
-              repo: 'rancher',
+              repo: 'shepherd',
               state: 'open',
               per_page: 100,
             });
@@ -45,7 +45,7 @@ jobs:
               // Fetch PR reviews
               const reviews = await github.rest.pulls.listReviews({
                 owner: 'rancher',
-                repo: 'rancher',
+                repo: 'shepherd',
                 pull_number: pr.number,
                 per_page: 100,
               });
