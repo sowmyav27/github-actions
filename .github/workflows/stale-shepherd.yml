@@ -2,7 +2,7 @@ name: Shepherd Mark stale pull requests
 
 on:
   schedule:
-  - cron: '0 0 * * *'
+  - cron: '* * * * *'
 
 jobs:
   stale:
@@ -22,7 +22,7 @@ jobs:
             let report = '';
             let noReviewsReport = '';
             let noChangesReport = '';
-            let awaitingReview = '';
+            let needsReviews = '';
             let needsChanges = '';
             let needsMerge = '';
 
@@ -47,43 +47,44 @@ jobs:
                 per_page: 100,
               });
               let lastReviewDate = null
-              let changesRequested = ""
+              let lastReviewStateOne = ""
+              let lastReviewStateTwo = ""
               let numberOfApprovedState = 0
+              statesCompare = ["COMMENTED", "CHANGES_REQUESTED"]
               
               // No reviews on the PR for > 5 days
               if (reviews.data.length == 0 && createdDate < fiveDaysAgo) {
-                noReviewsReport += `#${pr.number} ${pr.html_url}\n`;
+                noReviewsReport += `${pr.title} #${pr.number} ${pr.html_url} ${pr.author}\n`;
               } 
               else {
                   for (const review of reviews.data) {
                     const reviewDate = new Date(review.submitted_at);
                     if(!lastReviewDate || reviewDate > lastReviewDate) {
                       lastReviewDate = reviewDate
-                      changesRequested = review.state
+                      lastReviewStateTwo = lastReviewStateOne
+                      lastReviewStateOne = review.state
                       if ( review.state === "APPROVED"){
                         numberOfApprovedState+=1
                       }
                   }
                 }
               }
-              if ( updatedDate < fiveDaysAgo && (changesRequested === "OPEN" || numberOfApprovedState === 1) ){
-                noChangesReport += `#${pr.title} (#${pr.number}) ${pr.html_url}\n`;
-              }
-              if (lastReviewDate && (changesRequested === "CHANGES_REQUESTED" || numberOfApprovedState === 1) && (lastReviewDate < threeDaysAgo && updatedDate > lastReviewDate)) {
-                awaitingReview += `#${pr.title} (#${pr.number}) ${pr.html_url}\n`;
-              }
-              if (lastReviewDate && (changesRequested === "CHANGES_REQUESTED" || numberOfApprovedState === 1) && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate)) {
-                needsChanges += `#${pr.title} (#${pr.number}) ${pr.html_url}\n`;
-              }
-              if (lastReviewDate && numberOfApprovedState >=2 && (lastReviewDate < threeDaysAgo)) {
-                needsMerge += `#${pr.title} (#${pr.number}) ${pr.html_url}\n`;
+              //no updates for more than 3 days
+              if (lastReviewDate && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate) && (lastReviewStateOne in statesCompare) && (lastReviewStateTwo in statesCompare)) {
+                needsChanges += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.author} \n`;
+                
+              } else if (lastReviewDate && (updatedDate > lastReviewDate) && (updatedDate < threeDaysAgo)){
+                //Reviews needed
+                needsReviews += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.author} \n`;
+
+              }  else if (lastReviewDate && numberOfApprovedState >=2 && (lastReviewDate < threeDaysAgo) && (lastReviewState not in statesCompare)) {
+                needsMerge += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.author} \n`;
               }
             }
-            report += `Stale PR with no review (more than 5 days): \n` + noReviewsReport +`\n`
-              + `No changes in this PR for over 5 days: \n`+ noChangesReport +`\n` 
-              + `Changes made but awaiting review (more than 3 days since last update): \n`+ awaitingReview +`\n` 
-              + `PR with requested changes and no updates (more than 3 days): \n`+ needsChanges +`\n`
-              + `Reviewed but not merged (more than 3 days since review): \n` + needsMerge
+            report += `PRs with no reviews yet: \n` + noReviewsReport +`\n`
+              + `PRs that need reviews: \n`+ needsReviews +`\n` 
+              + `PRs with changes requested: \n`+ needsChanges +`\n`
+              + `PRs that need to be merged: \n` + needsMerge
             
             return report;
            
