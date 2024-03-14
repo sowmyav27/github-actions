@@ -81,11 +81,7 @@ jobs:
                 needsMerge += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.author} \n`;
               }
             }
-            report += `PRs with no reviews yet: \n` + noReviewsReport +`\n`
-              + `PRs that need reviews: \n`+ needsReviews +`\n` 
-              + `PRs with changes requested: \n`+ needsChanges +`\n`
-              + `PRs that need to be merged: \n` + needsMerge
-            
+            report += `PRs with no reviews yet: \n` + noReviewsReport +`\n` + `PRs that need reviews: \n`+ needsReviews +`\n` + `PRs with changes requested: \n`+ needsChanges +`\n` + `PRs that need to be merged: \n` + needsMerge
             return report;
            
           result-encoding: string
