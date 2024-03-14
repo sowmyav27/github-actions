@@ -70,18 +70,22 @@ jobs:
                 }
               }
               //no updates for more than 3 days
-              if (lastReviewDate && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate) && (lastReviewStateOne in statesCompare) && (lastReviewStateTwo in statesCompare)) {
+              if (lastReviewDate && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate) && statesCompare.includes(lastReviewStateOne) && statesCompare.includes(lastReviewStateTwo)) {
                 needsChanges += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.author} \n`;
                 
               } else if (lastReviewDate && (updatedDate > lastReviewDate) && (updatedDate < threeDaysAgo)){
                 //Reviews needed
                 needsReviews += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.author} \n`;
 
-              }  else if (lastReviewDate && numberOfApprovedState >=2 && (lastReviewDate < threeDaysAgo) && (lastReviewState not in statesCompare)) {
+              }  else if (lastReviewDate && numberOfApprovedState >=2 && (lastReviewDate < threeDaysAgo) && !statesCompare.includes(lastReviewStateOne)) {
                 needsMerge += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.author} \n`;
               }
             }
-            report += `PRs with no reviews yet: \n` + noReviewsReport +`\n` + `PRs that need reviews: \n`+ needsReviews +`\n` + `PRs with changes requested: \n`+ needsChanges +`\n` + `PRs that need to be merged: \n` + needsMerge
+            report += `PRs with no reviews yet: \n` + noReviewsReport +`\n`
+              + `PRs that need reviews: \n`+ needsReviews +`\n` 
+              + `PRs with changes requested: \n`+ needsChanges +`\n`
+              + `PRs that need to be merged: \n` + needsMerge
+            
             return report;
            
           result-encoding: string
