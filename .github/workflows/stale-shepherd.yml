@@ -81,10 +81,18 @@ jobs:
                 needsMerge += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.user.login} \n`;
               }
             }
-            report += `PRs with no reviews yet: \n` + noReviewsReport +`\n\n`
-              + `PRs that need reviews: \n`+ needsReviews +`\n\n` 
-              + `PRs with changes requested: \n`+ needsChanges +`\n\n`
-              + `PRs that need to be merged: \n` + needsMerge
+            if ( noReviewsReport) {
+              report += `PRs with no reviews yet: \n` + noReviewsReport +`\n\n`
+            }
+            if ( needsReviews ) {
+              report += `PRs that need reviews: \n`+ needsReviews +`\n\n` 
+            }
+            if ( needsChanges ) {
+              report += `PRs with changes requested: \n`+ needsChanges +`\n\n`
+            }
+            if ( needsMerge ) {
+              report += `PRs that need to be merged: \n` + needsMerge
+            }
             
             return report;
            
@@ -93,4 +101,4 @@ jobs:
       - name: Notify on Slack 
         if: steps.compile_report.outputs.result
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Report:\n${{ steps.compile_report.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report:\n${{ steps.compile_report.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
