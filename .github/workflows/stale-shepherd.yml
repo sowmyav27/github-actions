@@ -2,7 +2,7 @@ name: Shepherd Mark stale pull requests
 
 on:
   schedule:
-  - cron: '0 0 * * *'
+  - cron: '* * * * *'
 
 jobs:
   stale:
@@ -54,7 +54,7 @@ jobs:
               
               // No reviews on the PR for > 5 days
               if (reviews.data.length == 0 && createdDate < fiveDaysAgo) {
-                noReviewsReport += `${pr.title} #${pr.number} ${pr.html_url} ${pr.author}\n`;
+                noReviewsReport += `${pr.title} #${pr.number} ${pr.html_url} ${pr.user.login}\n`;
               } 
               else {
                   for (const review of reviews.data) {
@@ -71,19 +71,19 @@ jobs:
               }
               //no updates for more than 3 days
               if (lastReviewDate && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate) && statesCompare.includes(lastReviewStateOne) && statesCompare.includes(lastReviewStateTwo)) {
-                needsChanges += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.author} \n`;
+                needsChanges += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.user.login} \n`;
                 
               } else if (lastReviewDate && (updatedDate > lastReviewDate) && (updatedDate < threeDaysAgo)){
                 //Reviews needed
-                needsReviews += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.author} \n`;
+                needsReviews += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.user.login} \n`;
 
               }  else if (lastReviewDate && numberOfApprovedState >=2 && (lastReviewDate < threeDaysAgo) && !statesCompare.includes(lastReviewStateOne)) {
-                needsMerge += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.author} \n`;
+                needsMerge += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.user.login} \n`;
               }
             }
-            report += `PRs with no reviews yet: \n` + noReviewsReport +`\n`
-              + `PRs that need reviews: \n`+ needsReviews +`\n` 
-              + `PRs with changes requested: \n`+ needsChanges +`\n`
+            report += `PRs with no reviews yet: \n` + noReviewsReport +`\n\n`
+              + `PRs that need reviews: \n`+ needsReviews +`\n\n` 
+              + `PRs with changes requested: \n`+ needsChanges +`\n\n`
               + `PRs that need to be merged: \n` + needsMerge
             
             return report;
