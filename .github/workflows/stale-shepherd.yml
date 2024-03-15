@@ -2,7 +2,7 @@ name: Shepherd Mark stale pull requests
 
 on:
   schedule:
-  - cron: '* * * * *'
+  - cron: '0 0 * * *'
 
 jobs:
   stale:
