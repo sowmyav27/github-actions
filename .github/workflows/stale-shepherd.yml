@@ -32,7 +32,7 @@ jobs:
                 state: 'open',
                 per_page: 100,
               });
-              for (const pr of prs) {
+              for ( const pr of prs ) {
                 const createdDate = new Date(pr.created_at); 
                 const updatedDate = new Date(pr.updated_at); 
                 try{
@@ -48,7 +48,7 @@ jobs:
                   let numberOfApprovedState = 0
                   statesCompare = ["COMMENTED", "CHANGES_REQUESTED"]
                   
-                  if (reviews.data.length == 0 && createdDate < fiveDaysAgo) {
+                  if ( reviews.data.length == 0 && createdDate < fiveDaysAgo ) {
                     noReviewsReport += `${pr.title} #${pr.number} ${pr.html_url} ${pr.user.login}\n`;
                   } 
                   else {
@@ -64,21 +64,21 @@ jobs:
                       }
                     }
                   }
-                } catch(error){
+                } catch( error ){
                   console.log(`Error fetching reviews for PR #${pr.number}: ${error}`);
 
                 }
-                if (lastReviewDate && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate) && statesCompare.includes(lastReviewStateOne) && statesCompare.includes(lastReviewStateTwo)) {
+                if ( lastReviewDate && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate) && statesCompare.includes(lastReviewStateOne) && statesCompare.includes(lastReviewStateTwo) ) {
                   needsChanges += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.user.login} \n`;
                   
-                } else if (lastReviewDate && (updatedDate > lastReviewDate) && (updatedDate < threeDaysAgo)){
+                } else if ( lastReviewDate && (updatedDate > lastReviewDate) && (updatedDate < threeDaysAgo) ){
                   needsReviews += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.user.login} \n`;
 
-                }  else if (lastReviewDate && numberOfApprovedState >=2 && (lastReviewDate < threeDaysAgo) && !statesCompare.includes(lastReviewStateOne)) {
+                }  else if ( lastReviewDate && numberOfApprovedState >=2 && (lastReviewDate < threeDaysAgo) && !statesCompare.includes(lastReviewStateOne) ) {
                   needsMerge += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.user.login} \n`;
                 }
               }
-              if ( noReviewsReport) {
+              if ( noReviewsReport ) {
                 report += `PRs with no reviews yet: \n` + noReviewsReport +`\n\n`
               }
               if ( needsReviews ) {
@@ -92,7 +92,7 @@ jobs:
               }
               
               return report;
-            } catch(error){
+            } catch( error ){
               console.log(`Error fetching PRs - ${error}`);
             }
            
@@ -104,6 +104,10 @@ jobs:
           curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report:\n${{ steps.compile_report.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
       
       - name: Notify on Slack - No Result
-        if: steps.compile_report.outputs.result == "" || !steps.compile_report.outputs.result
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report: There are errors please check the GH actions' logs"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          result = "${{ steps.compile_report.outputs.result }}"
+          if [[ -n "$result"]]; then 
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report:\n${{ steps.compile_report.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          else
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report: There are errors please check the GH actions' logs"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
