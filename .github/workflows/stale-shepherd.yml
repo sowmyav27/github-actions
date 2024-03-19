@@ -101,8 +101,9 @@ jobs:
       - name: Notify on Slack - No Result
         run: |
           result = "${{ steps.compile_report.outputs.result }}"
-          if [[ -n "$result"]]; then 
-            curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report:\n${{ steps.compile_report.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          if [[ -n "$result" ]]; then 
+            curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"PR Status Report:\n$result\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
           else
             curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report: There are errors please check the GH actions' logs"}' ${{ secrets.SLACK_WEBHOOK_URL }}
           fi
+        shell: bash
