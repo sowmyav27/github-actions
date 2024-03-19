@@ -98,11 +98,6 @@ jobs:
            
           result-encoding: string
 
-      - name: Notify on Slack 
-        if: steps.compile_report.outputs.result
-        run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report:\n${{ steps.compile_report.outputs.result }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
-      
       - name: Notify on Slack - No Result
         run: |
           result = "${{ steps.compile_report.outputs.result }}"
