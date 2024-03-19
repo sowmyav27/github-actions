@@ -103,9 +103,9 @@ jobs:
           result="${{ steps.compile_report.outputs.result }}"
           echo "Result: $result"
           if [[ -n "$result" ]]; then 
-            curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"PR Status Report:\n$result\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report:\n$result"}' ${{ secrets.SLACK_WEBHOOK_URL }}
           else
-            curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report: There are errors please check the GH actions' logs"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report: There are errors please check the GH actions logs"}' ${{ secrets.SLACK_WEBHOOK_URL }}
           fi
           echo "curl command executed"
         shell: bash
