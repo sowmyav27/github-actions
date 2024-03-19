@@ -35,6 +35,11 @@ jobs:
               for ( const pr of prs ) {
                 const createdDate = new Date(pr.created_at); 
                 const updatedDate = new Date(pr.updated_at); 
+                let lastReviewDate = null
+                let lastReviewStateOne = ""
+                let lastReviewStateTwo = ""
+                let numberOfApprovedState = 0
+                statesCompare = ["COMMENTED", "CHANGES_REQUESTED"]
                 try{
                   const reviews = await github.rest.pulls.listReviews({
                     owner: 'rancher',
@@ -42,11 +47,6 @@ jobs:
                     pull_number: pr.number,
                     per_page: 100,
                   });
-                  let lastReviewDate = null
-                  let lastReviewStateOne = ""
-                  let lastReviewStateTwo = ""
-                  let numberOfApprovedState = 0
-                  statesCompare = ["COMMENTED", "CHANGES_REQUESTED"]
                   
                   if ( reviews.data.length == 0 && createdDate < fiveDaysAgo ) {
                     noReviewsReport += `${pr.title} #${pr.number} ${pr.html_url} ${pr.user.login}\n`;
