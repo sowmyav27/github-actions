@@ -96,7 +96,6 @@ jobs:
               return report;
 
             } catch( error ){
-              console.log(`Error fetching PRs - ${error}`);
               report += `There is an error getting PR Status report - Error: ${error} \n`;
               return report;
             }
