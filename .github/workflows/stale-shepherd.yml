@@ -44,7 +44,7 @@ jobs:
                 try{
                   const reviews = await github.rest.pulls.listReviews({
                     owner: 'rancher',
-                    repo: 'shepherrrrd',
+                    repo: 'shepherd',
                     pull_number: pr.number,
                     per_page: 100,
                   });
