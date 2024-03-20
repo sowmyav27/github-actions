@@ -25,10 +25,11 @@ jobs:
             let needsReviews = '';
             let needsChanges = '';
             let needsMerge = '';
+            let hasErrors = '';
             try {
                 const prs = await github.paginate(github.rest.pulls.list, {
                 owner: 'rancher',
-                repo: 'shepherd',
+                repo: 'shepherrrrrd',
                 state: 'open',
                 per_page: 100,
               });
@@ -43,7 +44,7 @@ jobs:
                 try{
                   const reviews = await github.rest.pulls.listReviews({
                     owner: 'rancher',
-                    repo: 'shepherd',
+                    repo: 'shepherrrrrd',
                     pull_number: pr.number,
                     per_page: 100,
                   });
@@ -65,8 +66,7 @@ jobs:
                     }
                   }
                 } catch( error ){
-                  console.log(`Error fetching reviews for PR #${pr.number}: ${error}`);
-                  return report;
+                  hasErrors += `${pr.title} (#${pr.number}) ${pr.html_url} - Error: ${error} \n`;
                 }
                 if ( lastReviewDate && (lastReviewDate < threeDaysAgo && updatedDate <= lastReviewDate) && statesCompare.includes(lastReviewStateOne) && statesCompare.includes(lastReviewStateTwo) ) {
                   needsChanges += `${pr.title} (#${pr.number}) ${pr.html_url} ${pr.user.login} \n`;
@@ -89,6 +89,9 @@ jobs:
               }
               if ( needsMerge ) {
                 report += `PRs that need to be merged: \n` + needsMerge
+              }
+              if ( hasErrors ) {
+                report += `PRs that have errors when fetching: \n` + hasErrors
               }
               return report;
 
