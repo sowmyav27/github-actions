@@ -28,7 +28,7 @@ jobs:
             try {
                 const prs = await github.paginate(github.rest.pulls.list, {
                 owner: 'rancher',
-                repo: 'shepherd',
+                repo: 'shepherrrrd',
                 state: 'open',
                 per_page: 100,
               });
@@ -43,7 +43,7 @@ jobs:
                 try{
                   const reviews = await github.rest.pulls.listReviews({
                     owner: 'rancher',
-                    repo: 'shepherd',
+                    repo: 'shepherrrrrd',
                     pull_number: pr.number,
                     per_page: 100,
                   });
