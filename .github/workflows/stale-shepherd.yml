@@ -44,7 +44,7 @@ jobs:
                 try{
                   const reviews = await github.rest.pulls.listReviews({
                     owner: 'rancher',
-                    repo: 'shepherrrrrd',
+                    repo: 'shepherrrrd',
                     pull_number: pr.number,
                     per_page: 100,
                   });
@@ -97,6 +97,7 @@ jobs:
 
             } catch( error ){
               console.log(`Error fetching PRs - ${error}`);
+              report += `There is an error getting PR Status report - Error: ${error} \n`;
               return report;
             }
            
