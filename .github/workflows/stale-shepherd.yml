@@ -2,7 +2,7 @@ name: Mark stale pull requests in Shepherd repo
 
 on:
   schedule:
-  - cron: '0 0 * * *'
+  - cron: '* * * * *'
 
 jobs:
   stale:
@@ -28,7 +28,7 @@ jobs:
             try {
                 const prs = await github.paginate(github.rest.pulls.list, {
                 owner: 'rancher',
-                repo: 'shepherrrrd',
+                repo: 'shepherd',
                 state: 'open',
                 per_page: 100,
               });
@@ -43,7 +43,7 @@ jobs:
                 try{
                   const reviews = await github.rest.pulls.listReviews({
                     owner: 'rancher',
-                    repo: 'shepherrrrrd',
+                    repo: 'shepherd',
                     pull_number: pr.number,
                     per_page: 100,
                   });
@@ -93,19 +93,18 @@ jobs:
               
               return report;
             } catch( error ){
+              return report;
               console.log(`Error fetching PRs - ${error}`);
             }
            
           result-encoding: string
 
-      - name: Notify on Slack - No Result
+      - name: Notify on Slack
         run: |
           result="${{ steps.compile_report.outputs.result }}"
-          echo "Result: $result"
           if [[ -n "$result" ]]; then 
             curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"PR Status Report:\n$result\"}" ${{ secrets.SLACK_WEBHOOK_URL }}
           else
             curl -X POST -H 'Content-type: application/json' --data '{"text":"PR Status Report: There are errors please check the GH actions logs"}' ${{ secrets.SLACK_WEBHOOK_URL }}
           fi
-          echo "curl command executed"
         shell: bash
