@@ -21,4 +21,4 @@ jobs:
       - name: Send Slack notification if failed
         if: failure()  # This sends the Slack notification if the previous step fails
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"Test failed! Please check the logs for details."}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Test failed! (Run #${{ github.run_number }}). Please check the logs for details."}' ${{ secrets.SLACK_WEBHOOK_URL }}
