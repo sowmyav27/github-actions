@@ -1,0 +1,24 @@
+name: Run Test Every Minute and Notify on Failure
+
+on:
+  schedule:
+    - cron: '*/1 * * * *'  # Runs every minute
+  workflow_dispatch:  # Allows for manual triggering of the workflow
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Run a sample test (replace with your actual test command)
+        run: |
+          echo "Running test..."
+          exit 1  # Simulate a failure for testing purposes
+
+      - name: Send Slack notification if failed
+        if: failure()  # This sends the Slack notification if the previous step fails
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"Test failed! Please check the logs for details."}' ${{ secrets.SLACK_WEBHOOK_URL }}
