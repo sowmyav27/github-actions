@@ -1,8 +1,6 @@
 name: Run Test Every Minute and Notify on Failure
 
 on:
-  schedule:
-    - cron: '*/1 * * * *'  # Runs every minute
   workflow_dispatch:  # Allows for manual triggering of the workflow
 
 jobs:
