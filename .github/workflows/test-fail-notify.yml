@@ -1,4 +1,4 @@
-name: Run Test Every Minute and Notify on Failure
+name: Notify on Failure
 
 on:
   workflow_dispatch:  # Allows for manual triggering of the workflow
