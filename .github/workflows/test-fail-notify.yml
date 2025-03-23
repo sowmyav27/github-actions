@@ -12,11 +12,28 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run a sample test (replace with your actual test command)
+        id: test-failure
         run: |
           echo "Running test..."
           exit 1  # Simulate a failure for testing purposes
-
-      - name: Send Slack notification if failed
-        if: failure()  # This sends the Slack notification if the previous step fails
+      
+      - name: Collect Test Results
+        id: collect-results
         run: |
-          curl -X POST -H 'Content-type: application/json' --data '{"text":"Test failed! (Run #${{ github.run_number }}). Please check the logs for details."}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          if [[ "${{ steps.execute-e2e-tests.outcome }}" == "failure" ]]; then
+            echo "status=failure" >> $GITHUB_ENV
+          else
+            echo "status=success" >> $GITHUB_ENV
+          fi
+
+      - name: Notify Slack on Nightly Run Status
+        uses: loft-sh/github-actions/.github/actions/ci-tests-notification@v1
+        if: always() 
+        with:
+          test_results: ${{ env.test_results }}
+          run_id: ${{ github.run_id }}
+          run_number: ${{ github.run_number }}
+          status: ${{ env.status }}
+          source_repo: ${{ github.repository }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_CI_TESTS_ALERTS }}
+     
