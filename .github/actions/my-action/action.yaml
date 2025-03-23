@@ -43,10 +43,10 @@ runs:
             - type: section
               fields:
                 - type: mrkdwn
-                  text: "*Repository:*\n${{ inputs.target_repo }}"
+                  text: "*Repository:*\n${{ inputs.source_repo }}"
                 - type: mrkdwn
                   text: "*Run:*\n#${{ inputs.run_number }}"
             - type: context
               elements:
                 - type: mrkdwn
-                  text: "<https://github.com/loft-sh/${{ inputs.source_repo }}/actions/runs/${{ inputs.run_id }}|View Run Details>"
+                  text: "<https://github.com/${{ inputs.source_repo }}/actions/runs/${{ inputs.run_id }}|View Run Details>"
