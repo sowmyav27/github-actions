@@ -27,7 +27,7 @@ jobs:
           fi
 
       - name: Notify Slack on Nightly Run Status
-        uses: sowmyav27/github-actions/.github/actions/action.yaml@main
+        uses: sowmyav27/github-actions/.github/actions/my-action@main
         if: always() 
         with:
           test_results: ${{ env.test_results }}
