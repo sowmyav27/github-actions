@@ -43,7 +43,7 @@ jobs:
           echo -e "FAILED_TESTS<<EOF\n$FAILED_TESTS\nEOF" >> $GITHUB_ENV
 
       - name: Report Failures to Slack
-        if: ${{ env.FAILED_TESTS != '' }}
+        if: always()
         uses: sowmyav27/github-actions/.github/actions/my-action@main
         with:
           test_results: "${{ env.FAILED_TESTS }}"
