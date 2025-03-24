@@ -8,46 +8,32 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test-suite:
-          - name: Test1
-          - name: Test2
-          - name: Test3
-          - name: Test4
+        test-suite: [Test1, Test2, Test3, Test4]
 
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
 
-      - name: Run test - ${{ matrix.test-suite.name }}
-        id: test-${{ matrix.test-suite.name }}
+      - name: Run test - ${{ matrix.test-suite }}
         run: |
-          echo "Running ${{ matrix.test-suite.name }}..."
+          echo "Running ${{ matrix.test-suite }}..."
           exit 1  # Simulate failure
 
       - name: Collect Failures
         if: failure()
-        run: |
-          echo "${{ matrix.test-suite.name }} -- failure" >> failures.txt
+        run: echo "FAILED_TESTS=${{ matrix.test-suite }} -- failure, $FAILED_TESTS" >> $GITHUB_ENV
 
-  collect-failures:
+  report-failures:
     needs: test
     runs-on: ubuntu-latest
-    if: always()  # Ensure this runs even if some tests fail
+    if: always()  # Run even if previous jobs fail
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Download Failure Logs
-        run: |
-          touch failures.txt  # Ensure file exists
-          cat failures.txt || echo "No failures"
-
       - name: Report Failures to Slack
-        if: always()
+        if: env.FAILED_TESTS != ''
         uses: sowmyav27/github-actions/.github/actions/my-action@main
         with:
-          test_results: $(cat failures.txt)
+          test_results: "${{ env.FAILED_TESTS }}"
           run_id: ${{ github.run_id }}
           run_number: ${{ github.run_number }}
           status: failure
