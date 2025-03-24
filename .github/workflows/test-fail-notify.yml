@@ -23,10 +23,12 @@ jobs:
 
       - name: Set Failure Variable
         if: failure()
-        run: echo "FAILED_TESTS=${{ env.FAILED_TESTS }}${{ env.FAILED_TESTS && '\n' || '' }}${{ matrix.test-suite }} -- failure" >> $GITHUB_ENV
+        run: |
+          echo "FAILED_TESTS=${{ matrix.test-suite }} -- failure"
+          echo "::set-output name=failed_tests::${{ matrix.test-suite }} -- failure"
 
     outputs:
-      failed_tests: ${{ steps.set_failure_variable.outputs.FAILED_TESTS }}
+      failed_tests: ${{ steps.set_failure_variable.outputs.failed_tests }}
 
   report-failures:
     needs: test
