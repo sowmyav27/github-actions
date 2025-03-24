@@ -23,7 +23,7 @@ jobs:
 
       - name: Set Failure Variable
         if: failure()
-        run: echo "FAILED_TEST=${{ matrix.test-suite }} -- failure" >> $GITHUB_ENV
+        run: echo "FAILED_TESTS=${{ env.FAILED_TESTS }}${{ env.FAILED_TESTS && '\n' || '' }}${{ matrix.test-suite }} -- failure" >> $GITHUB_ENV
 
   report-failures:
     needs: test
@@ -31,22 +31,14 @@ jobs:
     if: always()  # Run even if previous jobs fail
 
     steps:
-      - name: Aggregate Failures
-        run: |
-          FAILED_TESTS=""
-          for job in test1 test2 test3 test4; do  # Replace with your actual matrix job names
-            RESULT=$(jq -r ".${job}.result" <<< '${{ toJson(needs) }}')
-            if [[ "$RESULT" == "failure" ]]; then
-              FAILED_TESTS+="${job} -- failure\n"
-            fi
-          done
-          echo -e "FAILED_TESTS<<EOF\n$FAILED_TESTS\nEOF" >> $GITHUB_ENV
-
+      - name: Debug Failure Collection
+        run: echo "Collected Failures ${{ env.FAILED_TESTS }}"
+        
       - name: Report Failures to Slack
         if: always()
         uses: sowmyav27/github-actions/.github/actions/my-action@main
         with:
-          test_results: "${{ env.FAILED_TESTS }}"
+          test_results: ${{ env.FAILED_TESTS }}
           run_id: ${{ github.run_id }}
           run_number: ${{ github.run_number }}
           status: failure
