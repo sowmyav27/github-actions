@@ -21,20 +21,10 @@ jobs:
           echo "Running ${{ matrix.test-suite }}..."
           exit 1  # Simulating a failure
 
-      - name: Set Failure Variable
-        if: failure()
-        id: set_failure_variable
+      - name: Collect failed tests
+        if: failure()  # Only run if the test failed
         run: |
-          echo "FAILED_TESTS=${{ matrix.test-suite }} -- failure" >> $GITHUB_ENV
-
-      - name: Collect all failed tests and set output
-        id: collect_failures
-        run: |
-          echo "failed_tests=(${{ matrix.test-suite }} -- failure)" >> $GITHUB_ENV
-          echo "::set-output name=failed_tests::$(echo $FAILED_TESTS)"
-
-    outputs:
-      failed_tests: ${{ steps.collect_failures.outputs.failed_tests }}
+          echo "FAILED_TESTS=${{ matrix.test-suite }} -- failure" >> $GITHUB_ENV  # Collect the failed tests in GITHUB_ENV
 
   report-failures:
     needs: test
@@ -43,13 +33,14 @@ jobs:
 
     steps:
       - name: Debug Failure Collection
-        run: echo "Collected Failures ${{ needs.test.outputs.failed_tests }}"
+        run: |
+          echo "Collected Failures: ${{ env.FAILED_TESTS }}"  # This should print the collected failed tests
         
       - name: Report Failures to Slack
         if: always()
         uses: sowmyav27/github-actions/.github/actions/my-action@main
         with:
-          test_results: ${{ needs.test.outputs.failed_tests }}
+          test_results: "${{ env.FAILED_TESTS }}"
           run_id: ${{ github.run_id }}
           run_number: ${{ github.run_number }}
           status: failure
