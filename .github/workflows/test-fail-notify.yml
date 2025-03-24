@@ -23,12 +23,18 @@ jobs:
 
       - name: Set Failure Variable
         if: failure()
+        id: set_failure_variable
         run: |
-          echo "FAILED_TESTS=${{ matrix.test-suite }} -- failure"
-          echo "::set-output name=failed_tests::${{ matrix.test-suite }} -- failure"
+          echo "FAILED_TESTS=${{ matrix.test-suite }} -- failure" >> $GITHUB_ENV
+
+      - name: Collect all failed tests and set output
+        id: collect_failures
+        run: |
+          echo "failed_tests=(${{ matrix.test-suite }} -- failure)" >> $GITHUB_ENV
+          echo "::set-output name=failed_tests::$(echo $FAILED_TESTS)"
 
     outputs:
-      failed_tests: ${{ steps.set_failure_variable.outputs.failed_tests }}
+      failed_tests: ${{ steps.collect_failures.outputs.failed_tests }}
 
   report-failures:
     needs: test
