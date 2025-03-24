@@ -38,7 +38,7 @@ jobs:
       - name: Collect and aggregate failures
         run: |
           FAILED_TESTS=""
-          for test in ${{ needs.test.outputs.failed_tests }}; do
+          for test in ${{ fromJson(needs.test.outputs.failed_tests) }}; do
             if [[ -n "$test" ]]; then
               FAILED_TESTS+="$test\n"
             fi
