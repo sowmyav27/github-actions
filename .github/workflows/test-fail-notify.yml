@@ -34,12 +34,13 @@ jobs:
       - name: Aggregate Failures
         run: |
           FAILED_TESTS=""
-          for job in ${{ toJson(needs) }}; do
-            if [[ "${{ job.result }}" == "failure" ]]; then
-              FAILED_TESTS+="${{ job.test-suite }} -- failure, "
+          for job in test1 test2 test3 test4; do  # Replace with your actual matrix job names
+            RESULT=$(jq -r ".${job}.result" <<< '${{ toJson(needs) }}')
+            if [[ "$RESULT" == "failure" ]]; then
+              FAILED_TESTS+="${job} -- failure\n"
             fi
           done
-          echo "FAILED_TESTS=${FAILED_TESTS}" >> $GITHUB_ENV
+          echo -e "FAILED_TESTS<<EOF\n$FAILED_TESTS\nEOF" >> $GITHUB_ENV
 
       - name: Report Failures to Slack
         if: env.FAILED_TESTS != ''
