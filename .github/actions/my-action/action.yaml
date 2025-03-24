@@ -46,6 +46,10 @@ runs:
                   text: "*Repository:*\n${{ inputs.source_repo }}"
                 - type: mrkdwn
                   text: "*Run:*\n#${{ inputs.run_number }}"
+            - type: section
+              text:
+                type: mrkdwn
+                text: "*Test Results:*\n${{ inputs.test_results }}"
             - type: context
               elements:
                 - type: mrkdwn
