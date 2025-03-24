@@ -25,6 +25,10 @@ jobs:
         if: failure()
         run: echo "FAILED_TESTS=${{ env.FAILED_TESTS }}${{ env.FAILED_TESTS && '\n' || '' }}${{ matrix.test-suite }} -- failure" >> $GITHUB_ENV
 
+      - name: Set Output for Failed Tests
+        if: failure()
+        run: echo "FAILED_TESTS=${{ env.FAILED_TESTS }}" >> $GITHUB_ENV
+
   report-failures:
     needs: test
     runs-on: ubuntu-latest
@@ -32,13 +36,13 @@ jobs:
 
     steps:
       - name: Debug Failure Collection
-        run: echo "Collected Failures ${{ env.FAILED_TESTS }}"
+        run: echo "Collected Failures ${{ needs.test.outputs.FAILED_TESTS }}"
         
       - name: Report Failures to Slack
         if: always()
         uses: sowmyav27/github-actions/.github/actions/my-action@main
         with:
-          test_results: ${{ env.FAILED_TESTS }}
+          test_results: ${{ needs.test.outputs.FAILED_TESTS }}
           run_id: ${{ github.run_id }}
           run_number: ${{ github.run_number }}
           status: failure
