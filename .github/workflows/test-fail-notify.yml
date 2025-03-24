@@ -38,9 +38,10 @@ jobs:
       - name: Collect and aggregate failures
         run: |
           FAILED_TESTS=""
-          for test in ${{ fromJson(needs.test.outputs.failed_tests) }}; do
-            if [[ -n "$test" ]]; then
-              FAILED_TESTS+="$test\n"
+          for i in ${{ matrix.test-suite }}; do
+            RESULT=$(echo "${{ needs.test.outputs.failed_tests }}" | grep -o "$i")
+            if [[ -n "$RESULT" ]]; then
+              FAILED_TESTS+="$RESULT\n"
             fi
           done
           echo "FAILED_TESTS=$FAILED_TESTS" >> $GITHUB_ENV  # Use GITHUB_ENV for subsequent steps
