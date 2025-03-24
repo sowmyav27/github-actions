@@ -16,20 +16,14 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run test - ${{ matrix.test-suite }}
+        id: run-test
         run: |
           echo "Running ${{ matrix.test-suite }}..."
           exit 1  # Simulating a failure
 
-      - name: Collect Failures
+      - name: Set Failure Variable
         if: failure()
-        run: echo "${{ matrix.test-suite }} -- failure" >> failures.txt
-
-      - name: Upload Failure Results
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: failure-results
-          path: failures.txt
+        run: echo "FAILED_TEST=${{ matrix.test-suite }} -- failure" >> $GITHUB_ENV
 
   report-failures:
     needs: test
@@ -37,17 +31,15 @@ jobs:
     if: always()  # Run even if previous jobs fail
 
     steps:
-      - name: Download Failure Results
-        uses: actions/download-artifact@v3
-        with:
-          name: failure-results
-          path: .
-
-      - name: Prepare Failure Report
+      - name: Aggregate Failures
         run: |
-          if [ -f failures.txt ]; then
-            echo "FAILED_TESTS=$(cat failures.txt | tr '\n' ', ')" >> $GITHUB_ENV
-          fi
+          FAILED_TESTS=""
+          for job in ${{ toJson(needs) }}; do
+            if [[ "${{ job.result }}" == "failure" ]]; then
+              FAILED_TESTS+="${{ job.test-suite }} -- failure, "
+            fi
+          done
+          echo "FAILED_TESTS=${FAILED_TESTS}" >> $GITHUB_ENV
 
       - name: Report Failures to Slack
         if: env.FAILED_TESTS != ''
