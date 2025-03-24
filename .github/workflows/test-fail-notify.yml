@@ -1,45 +1,55 @@
 name: Notify on Failure
 
 on:
-  workflow_dispatch:  # Allows for manual triggering of the workflow
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-suite:
+          - name: Test1
+          - name: Test2
+          - name: Test3
+          - name: Test4
 
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
 
-      - name: Run a sample test (replace with your actual test command)
-        id: test-failure
+      - name: Run test - ${{ matrix.test-suite.name }}
+        id: test-${{ matrix.test-suite.name }}
         run: |
-          echo "Running test..."
-          exit 1  # Simulate a failure for testing purposes
+          echo "Running ${{ matrix.test-suite.name }}..."
+          exit 1  # Simulate failure
 
-      - name: Run a sample test (replace with your actual test command)
-        id: test-failure-2
+      - name: Collect Failures
+        if: failure()
         run: |
-          echo "Running test..."
-          exit 1  # Simulate a failure for testing purposes
-          
-      - name: Collect Test Results
-        id: collect-results
-        run: |
-          if [[ "${{ steps.execute-e2e-tests.outcome }}" == "failure" ]]; then
-            echo "status=failure" >> $GITHUB_ENV
-          else
-            echo "status=success" >> $GITHUB_ENV
-          fi
+          echo "${{ matrix.test-suite.name }} -- failure" >> failures.txt
 
-      - name: Notify Slack on Nightly Run Status
+  collect-failures:
+    needs: test
+    runs-on: ubuntu-latest
+    if: always()  # Ensure this runs even if some tests fail
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Download Failure Logs
+        run: |
+          touch failures.txt  # Ensure file exists
+          cat failures.txt || echo "No failures"
+
+      - name: Report Failures to Slack
+        if: always()
         uses: sowmyav27/github-actions/.github/actions/my-action@main
-        if: always() 
         with:
-          test_results: ${{ env.test_results }}
+          test_results: $(cat failures.txt)
           run_id: ${{ github.run_id }}
           run_number: ${{ github.run_number }}
-          status: ${{ env.status }}
+          status: failure
           source_repo: ${{ github.repository }}
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_CI_TESTS_ALERTS }}
-     
