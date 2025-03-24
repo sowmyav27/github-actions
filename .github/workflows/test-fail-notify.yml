@@ -7,6 +7,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false  # Ensures all tests run, even if one fails
       matrix:
         test-suite: [Test1, Test2, Test3, Test4]
 
@@ -17,11 +18,18 @@ jobs:
       - name: Run test - ${{ matrix.test-suite }}
         run: |
           echo "Running ${{ matrix.test-suite }}..."
-          exit 1  # Simulate failure
+          exit 1  # Simulating a failure
 
       - name: Collect Failures
         if: failure()
-        run: echo "FAILED_TESTS=${{ matrix.test-suite }} -- failure, $FAILED_TESTS" >> $GITHUB_ENV
+        run: echo "${{ matrix.test-suite }} -- failure" >> failures.txt
+
+      - name: Upload Failure Results
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: failure-results
+          path: failures.txt
 
   report-failures:
     needs: test
@@ -29,6 +37,18 @@ jobs:
     if: always()  # Run even if previous jobs fail
 
     steps:
+      - name: Download Failure Results
+        uses: actions/download-artifact@v3
+        with:
+          name: failure-results
+          path: .
+
+      - name: Prepare Failure Report
+        run: |
+          if [ -f failures.txt ]; then
+            echo "FAILED_TESTS=$(cat failures.txt | tr '\n' ', ')" >> $GITHUB_ENV
+          fi
+
       - name: Report Failures to Slack
         if: env.FAILED_TESTS != ''
         uses: sowmyav27/github-actions/.github/actions/my-action@main
