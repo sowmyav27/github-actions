@@ -18,7 +18,7 @@ inputs:
     required: true
   failed_tests:
     description: 'List of failed test suites, if any'
-    required: false
+    required: true
     default: ''
   webhook_url:
     description: 'Slack Webhook URL'
@@ -50,6 +50,10 @@ runs:
               text:
                 type: mrkdwn
                 text: "*Test Results:*\n${{ inputs.test_results }}"
+            - type: section
+              text:
+                type: mrkdwn
+                text: "*Failed tests:*\n${{ inputs.failed_tests }}"
             - type: context
               elements:
                 - type: mrkdwn
