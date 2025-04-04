@@ -19,7 +19,7 @@ jobs:
         id: run-test
         run: |
           echo "Running ${{ matrix.test-suite }}..."
-          if [ "${{ matrix.test-suite }}" != "Test3" || "${{ matrix.test-suite }}" != "Test1" || "${{ matrix.test-suite }}" != "Test4"]; then  # let's pretend Test3 passes
+          if [ "${{ matrix.test-suite }}" == "Test3" || "${{ matrix.test-suite }}" == "Test1" || "${{ matrix.test-suite }}" == "Test4"]; then  # let's pretend Test3 passes
             echo "${{ matrix.test-suite }}" >> failed-tests.txt
             exit 1
           fi
