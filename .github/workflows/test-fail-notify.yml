@@ -48,7 +48,7 @@ jobs:
         run: |
           mkdir -p combined
           find artifacts -name 'failed-tests-*' -exec echo {} \; >> combined/failed.txt
-          failed=$(cat combined/failed.txt | xargs | sed 's|.*/failed-tests-||' | tr ' ' ', ')
+          failed=$(cat combined/failed.txt | sed 's|.*/failed-tests-||' | tr '\n' '\n')
           echo "FAILED_TESTS=$failed" >> $GITHUB_ENV
 
       - name: Notify Slack
