@@ -26,7 +26,7 @@ jobs:
 
       - name: Upload failure file
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: failed-tests-${{ matrix.test-suite }}
           path: failed-tests.txt
@@ -37,7 +37,7 @@ jobs:
     if: always()  # Run even if previous jobs fail
     steps:
       - name: Download all failure artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
 
