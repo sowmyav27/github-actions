@@ -52,7 +52,7 @@ jobs:
           echo "FAILED_TESTS=$failed" >> $GITHUB_ENV
 
       - name: Notify Slack
-        uses: ./.github/actions/slack-notify  # assuming this is your composite action location
+        uses: ./.github/actions/my-action
         with:
           test_results: "Some tests failed"
           run_id: ${{ github.run_id }}
