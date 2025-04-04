@@ -47,12 +47,12 @@ jobs:
       - name: Combine failed test list
         run: |
           mkdir -p combined
-          find artifacts -name 'failed-tests.txt' -exec cat {} + >> combined/failed.txt
+          find artifacts -name 'failed-tests-*.zip' -exec unzip -p {} >> combined/failed.txt
           failed=$(cat combined/failed.txt | xargs | tr ' ' ', ')
           echo "FAILED_TESTS=$failed" >> $GITHUB_ENV
 
       - name: Notify Slack
-        uses: ./.github/actions/my-action
+        uses: ./.github/actions/slack-notify  # assuming this is your composite action location
         with:
           test_results: "Some tests failed"
           run_id: ${{ github.run_id }}
