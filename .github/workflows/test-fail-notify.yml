@@ -59,31 +59,8 @@ jobs:
           test_results: "Status of test cases run"
           run_id: ${{ github.run_id }}
           run_number: ${{ github.run_number }}
-          status: "failure"
+          status: ${{ needs.test.result == 'success' && 'success' || 'failure' }}
           source_repo: ${{ github.repository }}
           failed_tests: ${{ env.FAILED_TESTS }}
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_CI_TESTS_ALERTS }}
-    # steps:
-    #   - name: Collect and aggregate failures
-    #     run: |
-    #       FAILED_TESTS=""
-    #       for test in ${{ needs.test.outputs.failed_tests }}; do
-    #         if [[ -n "$test" ]]; then
-    #           FAILED_TESTS+="$test\n"
-    #         fi
-    #       done
-    #       echo "FAILED_TESTS=$FAILED_TESTS" >> $GITHUB_ENV  # Use GITHUB_ENV for subsequent steps
-
-    #   - name: Debug Failure Collection
-    #     run: echo "Collected Failures Sowmya ${{ env.FAILED_TESTS }}"  # Print out the collected failures
- 
-    #   - name: Report Failures to Slack
-    #     if: always()
-    #     uses: sowmyav27/github-actions/.github/actions/my-action@main
-    #     with:
-    #       test_results: "${{ env.FAILED_TESTS }}"
-    #       run_id: ${{ github.run_id }}
-    #       run_number: ${{ github.run_number }}
-    #       status: failure
-    #       source_repo: ${{ github.repository }}
-    #       webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_CI_TESTS_ALERTS }}
+    
