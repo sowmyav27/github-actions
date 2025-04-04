@@ -61,6 +61,6 @@ jobs:
           run_number: ${{ github.run_number }}
           status: ${{ needs.test.result == 'success' && 'success' || 'failure' }}
           source_repo: ${{ github.repository }}
-          failed_tests: ${{ needs.test.result == 'success' && 'N/A' || (env.FAILED_TESTS || 'N/A') }}
+          failed_tests: ${{ needs.test.result == 'success' && 'N/A' || env.FAILED_TESTS }}
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_CI_TESTS_ALERTS }}
     
