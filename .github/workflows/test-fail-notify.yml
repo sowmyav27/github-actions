@@ -19,42 +19,66 @@ jobs:
         id: run-test
         run: |
           echo "Running ${{ matrix.test-suite }}..."
-          exit 1  # Simulating a failure
+          if [ "${{ matrix.test-suite }}" != "Test3" ]; then  # let's pretend Test3 passes
+            echo "${{ matrix.test-suite }}" >> failed-tests.txt
+            exit 1
+          fi
 
-      - name: Set failure output
-        id: failure-output
-        if: failure()  # Only set output if test fails
-        run: |
-          echo "::set-output name=failure::${{ matrix.test-suite }} -- failure"
-    outputs:
-      failed_tests: ${{ steps.failure-output.outputs.failure }}  # Output the failed test(s)
+      - name: Upload failure file
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: failed-tests-${{ matrix.test-suite }}
+          path: failed-tests.txt
 
   report-failures:
     needs: test
     runs-on: ubuntu-latest
     if: always()  # Run even if previous jobs fail
-
     steps:
-      - name: Collect and aggregate failures
-        run: |
-          FAILED_TESTS=""
-          for test in ${{ needs.test.outputs.failed_tests }}; do
-            if [[ -n "$test" ]]; then
-              FAILED_TESTS+="$test\n"
-            fi
-          done
-          echo "FAILED_TESTS=$FAILED_TESTS" >> $GITHUB_ENV  # Use GITHUB_ENV for subsequent steps
-
-      - name: Debug Failure Collection
-        run: echo "Collected Failures Sowmya ${{ env.FAILED_TESTS }}"  # Print out the collected failures
- 
-      - name: Report Failures to Slack
-        if: always()
-        uses: sowmyav27/github-actions/.github/actions/my-action@main
+      - name: Download all failure artifacts
+        uses: actions/download-artifact@v3
         with:
-          test_results: "${{ env.FAILED_TESTS }}"
+          path: artifacts
+
+      - name: Combine failed test list
+        run: |
+          mkdir -p combined
+          find artifacts -name 'failed-tests.txt' -exec cat {} + >> combined/failed.txt
+          failed=$(cat combined/failed.txt | xargs | tr ' ' ', ')
+          echo "FAILED_TESTS=$failed" >> $GITHUB_ENV
+
+      - name: Notify Slack
+        uses: ./.github/actions/slack-notify  # assuming this is your composite action location
+        with:
+          test_results: "Some tests failed"
           run_id: ${{ github.run_id }}
           run_number: ${{ github.run_number }}
-          status: failure
+          status: "failure"
           source_repo: ${{ github.repository }}
+          failed_tests: ${{ env.FAILED_TESTS }}
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_CI_TESTS_ALERTS }}
+    # steps:
+    #   - name: Collect and aggregate failures
+    #     run: |
+    #       FAILED_TESTS=""
+    #       for test in ${{ needs.test.outputs.failed_tests }}; do
+    #         if [[ -n "$test" ]]; then
+    #           FAILED_TESTS+="$test\n"
+    #         fi
+    #       done
+    #       echo "FAILED_TESTS=$FAILED_TESTS" >> $GITHUB_ENV  # Use GITHUB_ENV for subsequent steps
+
+    #   - name: Debug Failure Collection
+    #     run: echo "Collected Failures Sowmya ${{ env.FAILED_TESTS }}"  # Print out the collected failures
+ 
+    #   - name: Report Failures to Slack
+    #     if: always()
+    #     uses: sowmyav27/github-actions/.github/actions/my-action@main
+    #     with:
+    #       test_results: "${{ env.FAILED_TESTS }}"
+    #       run_id: ${{ github.run_id }}
+    #       run_number: ${{ github.run_number }}
+    #       status: failure
+    #       source_repo: ${{ github.repository }}
+    #       webhook_url: ${{ secrets.SLACK_WEBHOOK_URL_CI_TESTS_ALERTS }}
