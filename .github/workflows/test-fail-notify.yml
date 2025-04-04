@@ -56,7 +56,7 @@ jobs:
       - name: Notify Slack
         uses: ./.github/actions/my-action  # assuming this is your composite action location
         with:
-          test_results: "Status of test cases run"
+          test_results: ${{ needs.test.result == 'success' && 'All tests have passed!' || 'There are failures.' }}
           run_id: ${{ github.run_id }}
           run_number: ${{ github.run_number }}
           status: ${{ needs.test.result == 'success' && 'success' || 'failure' }}
