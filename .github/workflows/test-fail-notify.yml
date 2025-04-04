@@ -51,7 +51,6 @@ jobs:
           mkdir -p combined
           find artifacts -name 'failed-tests-*' -exec echo {} \; >> combined/failed.txt
           echo "FAILED_TESTS=$(find artifacts -name 'failed-tests-*' -exec basename {} \; | sed 's/failed-tests-//'|  paste -sd ' ' -)" >> $GITHUB_ENV
-          echo "FAILED_TESTS=$failed" >> $GITHUB_ENV
 
       - name: Notify Slack
         uses: ./.github/actions/my-action  # assuming this is your composite action location
