@@ -47,7 +47,7 @@ jobs:
       - name: Combine failed test list
         run: |
           mkdir -p combined
-          find artifacts -name 'failed-tests-*.zip' -exec unzip -p {} >> combined/failed.txt
+          find artifacts -name 'failed-tests-*' -exec echo {} \; >> combined/failed.txt
           failed=$(cat combined/failed.txt | xargs | tr ' ' ', ')
           echo "FAILED_TESTS=$failed" >> $GITHUB_ENV
 
